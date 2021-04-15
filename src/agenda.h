@@ -1,77 +1,75 @@
 /**
- * @file lista.h
  * @author Joao Victor Otto
- * @brief Funcoes das agendas (listas de contatos)
- * 
+ *
+ * @brief A agenda é uma implementação de listas duplamente encadeadas que
+ * armazenam os contatos
+ *
+ * A agenda possui funcionalidades basicas de listas:
+ *      - Inicializar uma nova agenda
+ *      - Inserção (Ordenada) / Remoção
+ *      - Buscar elementos (por nome/sobrenome ou telefone)
+ *
+ * Alem disso sera possível importar arquivos .csv seguindo o padrão Google e
+ * exportar para o mesmo formato
  */
+
 #ifndef AGENDA_H
 #define AGENDA_H
 
-#include "contato.h"
-#include <stdio.h>
+#include <stdint.h>
 
-/**
- * @brief Lista circular de contatos
- * 
- */
-typedef struct agenda
-{
-    Contato *contato;
-    Contato *prox;
-    Contato *ant;
+#include "contato.h"
+
+typedef struct agenda_no {
+  Contato *contato;
+  Contato *prox;
+  Contato *ant;
+} Agenda_No;
+
+typedef struct agenda {
+  Agenda_No *contatos;
+  uint16_t quant_contatos;
 } Agenda;
 
 /**
- * @brief Aloca e inicializa uma nova lista de contatos
- * 
- * @return Agenda* endereço do inicio da agenda
+ * Aloca memoria e inicializa uma nova agenda
  */
-Agenda *agenda_init();
+Agenda *AgendaCria();
 
 /**
- * @brief Exporta os dados salvos na agenda para um arquivo permanente em
- * formato .csv seguindo o padrão Google
- * 
- */
-void agenda_exporta();
-
-/**
- * @brief Importa os dados de uma agenda .csv para que possam ser editadas pelo programa
- * 
- */
-void agenda_importa(FILE agendacsv);
-
-/**
- * @brief Insere um novo contato na agenda, mantendo uma ordenação alfabetica pelo nome
+ * Insere um novo contato na agenda, mantendo uma ordenação alfabetica pelo nome
  * A ordenação ira priorizar o primeiro nome, mas em caso de nomes iguais ira
  * utilizar o sobrenome para ordenacao
- * 
- * @param agenda a agenda na qual o contato sera inserido
- * @param contato o contato que sera inserido
  */
-void agenda_insere(Agenda *agenda, Contato *contato);
+void AgendaInsere(Agenda *agenda, Contato *novo);
 
 /**
- * @brief 
- * 
- * @param agenda 
- * @param contato 
+ * Remove o contato da agenda
  */
-void agenda_remove(Agenda *agenda, Contato *contato);
+void AgendaRemove(Agenda *agenda, Contato *contato);
 
 /**
- * @brief Busca por algum contato com o nome dado
- * @param agenda a agenda que sera utilizada para buscar o contato
- * @param nome o nome que sera procurado na agenda
+ * Procura por um contato utilizando o nome como chave de busca
  */
-Contato *agenda_procura_nome(Agenda *agenda, const char *nome);
+Contato *AgendaProcuraNome(Agenda *agenda, const char *nome);
 
 /**
- * @brief Busca por algum contato com o numero de telefone dado
- * 
- * @param agenda a agenda que sera utilizada para buscar o contato
- * @param telefone o numero de telefone que sera procurado
+ * Procura por um contato utilizando um numero de telefone como chave de busca
  */
-Contato *agenda_procura_telefone(Agenda *agenda, const char *telefone);
+Contato *AgendaProcuraTelefone(Agenda *agenda, const char *telefone);
 
+/**
+ * Importa um arquivo.csv seguindo o padrão Google
+ */
+void AgendaImporta(const char *arquivo);
+
+/**
+ * Exporta a agenda atual para um arquivo.csv
+ */
+void AgendaExporta(const char *arquivo);
+
+/**
+ * Libera a memoria alocada por cada contato e pela agenda
+ */
+void AgendaExclui();
 #endif

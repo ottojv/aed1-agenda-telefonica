@@ -1,49 +1,47 @@
-/**
- * @file contato.h
- * @author Joao Victor Otto
- * @brief Funcoes dos contatos 
- * 
- */
+// João Victor Otto
+//
+// Contatos são armazenados em structs
+// nas quais cada campo armazena uma informação
+//
+// É possivel criar, excluir e editar contatos
 
 #ifndef CONTATO_H
 #define CONTATO_H
 
-typedef struct contato {
-    char *nome;
-    char *sobrenome;
-    char *cargo;
-    char *empresa;
-    char *email;
-    char *telefones;
-    char *observacoes;
+#include <stdint.h>
+
+typedef enum Campos
+{
+    NOME,
+    TELEFONES,
+    SOBRENOME,
+    CARGO,
+    EMAIL,
+    EMPRESA,
+    OBSERVACOES
+} Campos;
+
+typedef struct Contato
+{
+    const char *nome;
+    const char *telefones;
+    const char *sobrenome;
+    const char *cargo;
+    const char *email;
+    const char *empresa;
+    const char *observacoes;
 } Contato;
 
-/**
- * @brief Aloca memoria e solicita informações da entrada padrão para criar um novo contato
- * 
- * @return struct Contato* ponteiro para o contato criado
- */
-Contato *contato_init(char *nome, char *telefone, ...);
+// Cria um novo contato
+// Deve ser inicializado com nome e sobrenome, os demais campos são opcionais
+Contato *CriaContato(const char *nome, const char *telefone,
+                     uint8_t quantOpcionais, const Campos camposOpcionais[],
+                     ...);
 
-/**
- * @brief Libera a memoria alocada para um contato
- * 
- * @param cont o contato que sera excluido
- */
-void contato_del(Contato *contato);
+// Limpa a memoria alocada pelo contato
+void ExcluiContato(Contato *contato);
 
-/**
- * @brief Edita as informações de um contato realocando a memoria se for preciso
- * 
- * @return struct Contato* ponteiro para o contato editado
- */
-Contato *contato_edit();
-
-/**
- * @brief Transforma as informações do contato em uma unica string
- * 
- * @return const char* o endereço de memoria da string que contem as informações do contato
- */
-const char* contato_string();
-
+// Possibilita editar as informações de um contato
+Contato *EditaContato(Contato *contato, uint8_t quant_campos,
+                      const Campos campos[], ...);
 #endif
