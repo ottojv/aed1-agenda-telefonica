@@ -24,14 +24,11 @@ Contato *CriaContato(const char *nome, const char *telefone,
     contato->observacoes = NULL;
 
     // argumentos opcionais
-    if (quantOpcionais > 0)
-    {
+    if (quantOpcionais > 0) {
         va_list args;
         va_start(args, camposOpcionais);
-        while (quantOpcionais--)
-        {
-            switch (camposOpcionais[quantOpcionais])
-            {
+        while (quantOpcionais--) {
+            switch (camposOpcionais[quantOpcionais]) {
             case SOBRENOME:
                 contato->sobrenome = va_arg(args, const char *);
                 break;
@@ -68,8 +65,7 @@ Contato *EditaContato(Contato *contato, uint8_t quant_campos,
                       const Campos campos[], ...)
 {
     // Função chamada sem informar os campos que serão editados
-    if (quant_campos == 0 || campos == NULL)
-    {
+    if (quant_campos == 0 || campos == NULL) {
         fprintf(stderr, "EditaContato chamada sem informar os"
                         " campos que serão editados\n"); 
         return NULL;
@@ -77,10 +73,8 @@ Contato *EditaContato(Contato *contato, uint8_t quant_campos,
 
     va_list args;
     va_start(args, campos);
-    while (quant_campos--)
-    {
-        switch (campos[quant_campos])
-        {
+    while (quant_campos--) {
+        switch (campos[quant_campos]) {
         case NOME:
             contato->nome = va_arg(args, const char *);
             break;
