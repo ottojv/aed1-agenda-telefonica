@@ -1,17 +1,17 @@
-// João Victor Otto
+// Aluno: João Victor Otto
+// Matricula: 202000180
 //
-// Contatos são armazenados em structs
-// nas quais cada campo armazena uma informação
-//
-// É possivel criar, excluir e editar contatos
+// A estrutura contato armazena as informações individuais dos contatos
+// As funções implementadas são: criar, excluir e editar contatos
 
 #ifndef CONTATO_H
 #define CONTATO_H
 
 #include <stdint.h>
 
-typedef enum Campos
-{
+typedef struct telefones Telefones;
+
+typedef enum Campos {
     NOME,
     TELEFONES,
     SOBRENOME,
@@ -21,27 +21,28 @@ typedef enum Campos
     OBSERVACOES
 } Campos;
 
-typedef struct Contato
-{
+typedef struct contato {
+    Telefones *telefones;
     const char *nome;
-    const char *telefones;
-    const char *sobrenome;
     const char *cargo;
     const char *email;
     const char *empresa;
     const char *observacoes;
+    const char *sobrenome;
 } Contato;
 
 // Cria um novo contato
 // Deve ser inicializado com nome e sobrenome, os demais campos são opcionais
-Contato *CriaContato(const char *nome, const char *telefone,
-                     uint8_t quantOpcionais, const Campos camposOpcionais[],
-                     ...);
+// @param nopcionais quantidade de campos opcionais que serão preenchidos
+// @param campos_opcionais quais campos opcionais serão preenchidos
+Contato *cria_contato(const char *nome, const char *telefone,
+                      uint8_t nopcionais, const Campos campos_opcionais[], ...);
 
 // Limpa a memoria alocada pelo contato
-void ExcluiContato(Contato *contato);
+void exclui_contato(Contato *contato);
 
-// Possibilita editar as informações de um contato
-Contato *EditaContato(Contato *contato, uint8_t quant_campos,
-                      const Campos campos[], ...);
+// Edita as informações de um contato
+Contato *edita_contato(Contato *contato, uint8_t ncampos, const Campos campos[],
+                       ...);
+
 #endif

@@ -6,43 +6,45 @@
 
 #include "telefones.h"
 
-// o ottojv TODO arrumar telefone para possibilitar multiplos telefones
-// Os parametros
-// identificar quantos e quais campos opcionais serão preenchidos ao criar o contato
-// Se nenhum campo adicional for preenchido quant_opcionais deve ser <= 0
-Contato *CriaContato(const char *nome, const char *telefone,
-                     uint8_t quantOpcionais, const Campos camposOpcionais[],
-                     ...)
+// Os parametros nopcionais e campos_opcionais identificam a quant. e quais
+// campos opcionais serão preenchidos ao criar o contato
+// Se nenhum campo adicional for preenchido nopcionais deve ser 0
+Contato *cria_contato(const char *nome, const char *telefone,
+                      uint8_t nopcionais, const Campos campos_opcionais[], ...)
 {
-    Contato *contato = (Contato *)malloc(sizeof(Contato));
-    contato->nome = nome;
-    contato->telefones = telefone;
-    contato->sobrenome = NULL;
-    contato->cargo = NULL;
-    contato->email = NULL;
-    contato->empresa = NULL;
-    contato->observacoes = NULL;
+    Contato *novo = (Contato *)malloc(sizeof(Contato));
+    novo->nome = nome;
+    novo->telefones = inicia_tel();
+    add_tel(novo, telefone);
+    novo->sobrenome = NULL;
+    novo->cargo = NULL;
+    novo->email = NULL;
+    novo->empresa = NULL;
+    novo->observacoes = NULL;
 
     // argumentos opcionais
-    if (quantOpcionais > 0) {
+    if (nopcionais > 0) {
         va_list args;
-        va_start(args, camposOpcionais);
-        while (quantOpcionais--) {
-            switch (camposOpcionais[quantOpcionais]) {
+        va_start(args, campos_opcionais);
+        while (nopcionais--) {
+            switch (campos_opcionais[nopcionais]) {
             case SOBRENOME:
-                contato->sobrenome = va_arg(args, const char *);
+                novo->sobrenome = va_arg(args, const char *);
+                break;
+            case TELEFONES:
+                add_tel(novo, va_arg(args, const char *));
                 break;
             case CARGO:
-                contato->cargo = va_arg(args, const char *);
+                novo->cargo = va_arg(args, const char *);
                 break;
             case EMAIL:
-                contato->email = va_arg(args, const char *);
+                novo->email = va_arg(args, const char *);
                 break;
             case EMPRESA:
-                contato->empresa = va_arg(args, const char *);
+                novo->empresa = va_arg(args, const char *);
                 break;
             case OBSERVACOES:
-                contato->observacoes = va_arg(args, const char *);
+                novo->observacoes = va_arg(args, const char *);
                 break;
             default:
                 break;
@@ -51,35 +53,33 @@ Contato *CriaContato(const char *nome, const char *telefone,
         va_end(args);
     }
 
-    return contato;
+    return novo;
 }
 
-void ExcluiContato(Contato *contato)
+void exclui_contato(Contato *contato)
 {
     free(contato);
 }
 
-// Similar à função CriaContato
-// o parametro campos é utilizado para identificar quais campos serão alterados
-Contato *EditaContato(Contato *contato, uint8_t quant_campos,
-                      const Campos campos[], ...)
+// Similar à função cria_contato
+// @param ncampos quantos campos serão editados
+// @param campos quais campos serão editados
+Contato *edita_contato(Contato *contato, uint8_t ncampos, const Campos campos[],
+                       ...)
 {
     // Função chamada sem informar os campos que serão editados
-    if (quant_campos == 0 || campos == NULL) {
-        fprintf(stderr, "EditaContato chamada sem informar os"
+    if (ncampos == 0 || campos == NULL) {
+        fprintf(stderr, "edita_contato chamada sem informar os"
                         " campos que serão editados\n"); 
         return NULL;
     }
 
     va_list args;
     va_start(args, campos);
-    while (quant_campos--) {
-        switch (campos[quant_campos]) {
+    while (ncampos--) {
+        switch (campos[ncampos]) {
         case NOME:
             contato->nome = va_arg(args, const char *);
-            break;
-        case TELEFONES:
-            contato->telefones = va_arg(args, const char *);
             break;
         case SOBRENOME:
             contato->sobrenome = va_arg(args, const char *);
@@ -95,6 +95,8 @@ Contato *EditaContato(Contato *contato, uint8_t quant_campos,
             break;
         case OBSERVACOES:
             contato->observacoes = va_arg(args, const char *);
+            break;
+        default:
             break;
         }
     }
