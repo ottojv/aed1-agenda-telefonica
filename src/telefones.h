@@ -15,7 +15,7 @@ typedef struct contato Contato;
 
 typedef struct notelefone NoTelefone;
 struct notelefone {
-    const char *numero;
+    char *numero;
     NoTelefone *prox;
     NoTelefone *ant;
 };
@@ -31,7 +31,7 @@ struct telefones {
 Telefones *inicia_tel();
 
 // Insere um novo numero para um contato existente
-void add_tel(Contato *contato, const char *numero);
+void add_tel(Contato *contato, char *numero);
 
 // Remove um numero de telefone de um contato
 void rm_tel(Contato *contato, const char *numero);
@@ -43,5 +43,8 @@ uint8_t lista_cheia(Telefones *lista);
 // Se o contato for encontrado retorna um ponteiro para o mesmo
 // Caso nenhum contato seja encontrado retorna NULL
 Contato *busca_tel(const char *numero);
+
+// Libera a memoria alocada por uma listqa de telefones
+void exclui_telefones(Telefones *lista);
 
 #endif

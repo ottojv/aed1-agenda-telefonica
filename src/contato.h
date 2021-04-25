@@ -10,6 +10,7 @@
 #include <stdint.h>
 
 typedef struct telefones Telefones;
+typedef struct agenda Agenda;
 
 typedef enum Campos {
     NOME,
@@ -23,26 +24,25 @@ typedef enum Campos {
 
 typedef struct contato {
     Telefones *telefones;
-    const char *nome;
-    const char *cargo;
-    const char *email;
-    const char *empresa;
-    const char *observacoes;
-    const char *sobrenome;
+    char *nome;
+    char *cargo;
+    char *email;
+    char *empresa;
+    char *observacoes;
+    char *sobrenome;
 } Contato;
 
 // Cria um novo contato
-// Deve ser inicializado com nome e sobrenome, os demais campos são opcionais
-// @param nopcionais quantidade de campos opcionais que serão preenchidos
-// @param campos_opcionais quais campos opcionais serão preenchidos
-Contato *cria_contato(const char *nome, const char *telefone,
-                      uint8_t nopcionais, const Campos campos_opcionais[], ...);
+// Deve ser inicializado com nome e sobrenome
+Contato *cria_contato(char *nome, char *telefone);
 
 // Limpa a memoria alocada pelo contato
 void exclui_contato(Contato *contato);
 
 // Edita as informações de um contato
-Contato *edita_contato(Contato *contato, uint8_t ncampos, const Campos campos[],
-                       ...);
+Contato *edita_contato(Contato *contato, char *novo, Campos campos);
+
+// Realiza uma ligação para um contato adicionando o contato no historico
+void liga_contato(Agenda *agenda, Contato *contato);
 
 #endif

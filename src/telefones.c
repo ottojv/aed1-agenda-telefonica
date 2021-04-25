@@ -26,7 +26,7 @@ Telefones *inicia_tel()
     return &(Telefones){NULL, 0, MAXTEL};
 }
 
-void add_tel(Contato *contato, const char *numero)
+void add_tel(Contato *contato, char *numero)
 {
     // Se não existir lista de telefones inicializada
     if (contato->telefones == NULL) {
@@ -158,4 +158,18 @@ void rm_hash(const char *numero)
         }
         chave++;
     }
+}
+
+void exclui_telefones(Telefones *lista)
+{
+    NoTelefone *atual = lista->inicio;
+    while (atual != NULL) {
+        if (atual->prox != NULL) {
+            atual = atual->prox;
+            free(atual->ant);
+        } else {
+            free(atual);
+        }
+    }
+    free(lista);
 }
