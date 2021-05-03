@@ -47,4 +47,10 @@ Contato *busca_tel(const char *numero);
 // Libera a memoria alocada por uma listqa de telefones
 void exclui_telefones(Telefones *lista);
 
+// Verifica se o telefone esta na forma correta (xxxxx-xxxx ou xxxxxxxxx)
+int verifica_telefone(char *tel);
+
+// Retorna uma string com todos os telefones separados por " ::: "
+char *string_telefones(Telefones *lista);
+
 #endif

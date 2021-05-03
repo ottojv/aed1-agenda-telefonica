@@ -63,10 +63,13 @@ Contato *procura_nome(Agenda *agenda, const char *nome);
 Contato *procura_tel(Agenda *agenda, const char *telefone);
 
 // Importa um arquivo.csv seguindo o padrão Google
-void importar_agenda(const char *arquivo);
+// Não importa corretamente se algum contato tiver campos com tags de tipo definida
+// Ex.: Telefone - residencial / trabalho / fax / etc
+// Pode ser chamada passando NULL para agenda, nesse caso uma nova agenda é criada
+Agenda *importar_agenda(Agenda *agenda, const char *arquivo);
 
 // Exporta a agenda atual para um arquivo.csv
-void exportar_agenda(const char *arquivo);
+void exportar_agenda(Agenda *agenda, const char *arquivo);
 
 // Libera a memoria alocada por cada contato e pela agenda
 void exclui_agenda(Agenda *agenda);

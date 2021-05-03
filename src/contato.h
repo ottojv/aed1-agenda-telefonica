@@ -32,8 +32,8 @@ typedef struct contato {
     char *sobrenome;
 } Contato;
 
-// Cria um novo contato
-// Deve ser inicializado com nome e sobrenome
+// Aloca memoria e inicializa um novo contato
+// Retorna o endereço do primeiro byte alocado ou NULL em caso de falha
 Contato *cria_contato(char *nome, char *telefone);
 
 // Limpa a memoria alocada pelo contato

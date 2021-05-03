@@ -2,6 +2,7 @@
 #include "agenda.h"
 #include "contato.h"
 
+#include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -172,4 +173,65 @@ void exclui_telefones(Telefones *lista)
         }
     }
     free(lista);
+}
+
+int verifica_telefone(char *tel)
+{
+    unsigned int len = strlen(tel);
+    unsigned int maxlen = 10; // xxxxx-xxx
+    unsigned int minlen = 9;  // xxxxxyyyy
+    if (len > maxlen || len <= minlen) {
+        return 0;
+    }
+    for (unsigned int i = 0; i < len; ++i) {
+        if (i == 5 && len == maxlen && tel[i] != '-') {
+            return 0;
+        }
+        if (!isdigit(tel[i])) {
+            return 0;
+        }
+    }
+
+    return 1;
+}
+
+char *string_telefones(Telefones *lista)
+{
+    const unsigned int size_tel = 10; // xxxxx-xxxx -> 10 caracteres
+    const unsigned int size_del = 5;  // " ::: " -> 5 caracteres
+    if (lista == NULL || lista->ntel == 0) {
+        return "";
+    }
+
+    // Apenas um numero de telefone nao precisa do separador " ::: "
+    char *string;
+    if (lista->ntel == 1) {
+        string = (char *)malloc((size_tel + 1) * sizeof(char));
+    } else {
+        string = (char *)malloc(
+            (size_tel * lista->ntel + size_del * lista->ntel) * sizeof(char));
+    }
+    string[0] = '\0';
+    string[size_tel * lista->ntel + size_del * lista->ntel - 1] = '\0';
+
+    NoTelefone *tel = lista->inicio;
+    while (tel != NULL) {
+        // Transforma telefones da forma xxxxxyyyy para xxxxx-xxxx
+        if (strlen(tel->numero) == 9) {
+            char inicio[6]; // Cinco primeiros caracteres
+            strncpy(inicio, tel->numero, 5);
+            inicio[5] = '\0';
+            strcat(string, inicio);
+            strcat(string, "-");
+            // Ultimos 4 caracteres
+            strncat(string, strtok(tel->numero, inicio), 4);
+        } else {
+            strcat(string, tel->numero);
+        }
+        if (tel->prox != NULL) {
+            strcat(string, " ::: ");
+        }
+        tel = tel->prox;
+    }
+    return string;
 }
