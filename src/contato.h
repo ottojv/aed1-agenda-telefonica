@@ -12,7 +12,8 @@
 typedef struct telefones Telefones;
 typedef struct agenda Agenda;
 
-typedef enum Campos {
+typedef enum Campos
+{
     NOME,
     TELEFONES,
     SOBRENOME,
@@ -22,7 +23,8 @@ typedef enum Campos {
     OBSERVACOES
 } Campos;
 
-typedef struct contato {
+typedef struct contato Contato;
+struct contato {
     Telefones *telefones;
     char *nome;
     char *cargo;
@@ -30,11 +32,14 @@ typedef struct contato {
     char *empresa;
     char *observacoes;
     char *sobrenome;
-} Contato;
+    Contato *anterior;
+    Contato *proximo;
+};
 
 // Aloca memoria e inicializa um novo contato
 // Retorna o endereço do primeiro byte alocado ou NULL em caso de falha
-Contato *cria_contato(char *nome, char *telefone);
+Contato *cria_contato(char *nome, char *sobrenome, char *telefone, char *email,
+                      char *cargo, char *empresa, char *observacoes);
 
 // Limpa a memoria alocada pelo contato
 void exclui_contato(Contato *contato);
