@@ -25,13 +25,14 @@ typedef enum Campos
 
 typedef struct contato Contato;
 struct contato {
-    Telefones *telefones;
     char *nome;
     char *cargo;
     char *email;
     char *empresa;
     char *observacoes;
     char *sobrenome;
+    Telefones *telefones;
+    unsigned int ntelefones;
     Contato *anterior;
     Contato *proximo;
 };

@@ -1,41 +1,66 @@
 [
-  {
-    "arguments": [
-      "/usr/bin/gcc",
-      "-c",
-      "-std=c17",
-      "-Wall",
-      "-Werror",
-      "-Wextra",
-      "src/main.c"
-    ],
-    "directory": "/home/ottojv/src/aed1-agenda-telefonica",
-    "file": "/home/ottojv/src/aed1-agenda-telefonica/src/main.c"
-  },
-  {
-    "arguments": [
-      "/usr/bin/gcc",
-      "-c",
-      "-std=c17",
-      "-Wall",
-      "-Werror",
-      "-Wextra",
-      "src/contato.c"
-    ],
-    "directory": "/home/ottojv/src/aed1-agenda-telefonica",
-    "file": "/home/ottojv/src/aed1-agenda-telefonica/src/contato.c"
-  },
-  {
-    "arguments": [
-      "/usr/bin/gcc",
-      "-c",
-      "-std=c17",
-      "-Wall",
-      "-Werror",
-      "-Wextra",
-      "src/agenda.c"
-    ],
-    "directory": "/home/ottojv/src/aed1-agenda-telefonica",
-    "file": "/home/ottojv/src/aed1-agenda-telefonica/src/agenda.c"
-  }
+    {
+        "arguments": [
+            "gcc",
+            "-c",
+            "-g",
+            "-std=c11",
+            "-Wall",
+            "-Werror",
+            "-Wextra",
+            "-o",
+            "main",
+            "src/telefones.c"
+        ],
+        "directory": "/home/ottojv/src/aed1-agenda-telefonica",
+        "file": "src/telefones.c"
+    },
+    {
+        "arguments": [
+            "gcc",
+            "-c",
+            "-g",
+            "-std=c11",
+            "-Wall",
+            "-Werror",
+            "-Wextra",
+            "-o",
+            "main",
+            "src/agenda.c"
+        ],
+        "directory": "/home/ottojv/src/aed1-agenda-telefonica",
+        "file": "src/agenda.c"
+    },
+    {
+        "arguments": [
+            "gcc",
+            "-c",
+            "-g",
+            "-std=c11",
+            "-Wall",
+            "-Werror",
+            "-Wextra",
+            "-o",
+            "main",
+            "src/contato.c"
+        ],
+        "directory": "/home/ottojv/src/aed1-agenda-telefonica",
+        "file": "src/contato.c"
+    },
+    {
+        "arguments": [
+            "gcc",
+            "-c",
+            "-g",
+            "-std=c11",
+            "-Wall",
+            "-Werror",
+            "-Wextra",
+            "-o",
+            "main",
+            "src/main.c"
+        ],
+        "directory": "/home/ottojv/src/aed1-agenda-telefonica",
+        "file": "src/main.c"
+    }
 ]

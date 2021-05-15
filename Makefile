@@ -1,20 +1,11 @@
 
-FLAGS = -std=c11 -Wall -Werror -Wextra
+CC = gcc
+ERRORS = -Wall -Werror -Wextra -Wno-unused-parameter
+FLAGS = -std=c11 $(ERRORS) src/main.c src/agenda.c src/contato.c src/telefones.c
+CURSES = -lncurses -lpanel -lmenu -lform
 
-output: main.o agenda.o contato.o telefones.o
-	gcc $(FLAGS) main.o agenda.o contato.o telefones.o -o main
-
-agenda.o: src/agenda.c src/agenda.h 
-	gcc $(FLAGS) src/agenda.c -o agenda.o
-
-contato.o: src/contato.c src/contato.h
-	gcc  $(FLAGS) src/contato.c -o contato.o
-
-telefones.o: src/telefones.c src/telefones.h
-	gcc $(FLAGS) src/telefones.c -o telefones.o
-
-main.o: src/main.c
-	gcc $(FLAGS) src/main.c
+output: src/main.c src/agenda.c src/agenda.h src/contato.c src/contato.h src/telefones.c src/telefones.h
+	$(CC) -g $(FLAGS) $(CURSES) -o main
 
 clean:
-	rm *.o main
+	rm main

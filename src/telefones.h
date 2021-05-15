@@ -7,50 +7,36 @@
 #ifndef TELEFONES_H
 #define TELEFONES_H
 
-#define MAXTEL (UINT8_MAX)
-
 #include <stdint.h>
+
+#define TELSIZ 15
 
 typedef struct contato Contato;
 
-typedef struct notelefone NoTelefone;
-struct notelefone {
-    char *numero;
-    NoTelefone *prox;
-    NoTelefone *ant;
-};
-
 typedef struct telefones Telefones;
 struct telefones {
-    NoTelefone *inicio;
-    uint8_t ntel;
-    const uint8_t nmax;
+    const char *numero;
+    Telefones *proximo;
 };
 
-// Aloca memoria e inicializa uma nova lista de telefones
-Telefones *inicia_tel();
+// Aloca memoria e inicializa um nó de uma lista telefonica
+Telefones *cria_tel(const char *numero);
 
 // Insere um novo numero para um contato existente
-void add_tel(Contato *contato, char *numero);
+void add_tel(Contato *contato, const char *numero);
 
 // Remove um numero de telefone de um contato
 void rm_tel(Contato *contato, const char *numero);
-
-// Retorna true se a lista de telefones estiver cheia e false caso contrario
-uint8_t lista_cheia(Telefones *lista);
 
 // Busca por um contato com um determinado numero de telefone
 // Se o contato for encontrado retorna um ponteiro para o mesmo
 // Caso nenhum contato seja encontrado retorna NULL
 Contato *busca_tel(const char *numero);
 
-// Libera a memoria alocada por uma listqa de telefones
+// Libera a memoria alocada por uma lista de telefones
 void exclui_telefones(Telefones *lista);
 
-// Verifica se o telefone esta na forma correta (xxxxx-xxxx ou xxxxxxxxx)
-int verifica_telefone(char *tel);
-
 // Retorna uma string com todos os telefones separados por " ::: "
-char *string_telefones(Telefones *lista);
+char *string_telefones(Contato* contato);
 
 #endif

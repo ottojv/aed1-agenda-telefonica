@@ -7,7 +7,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define MAXTABELA ((MAXTEL) * (MAXAGENDA))
+#define MAXTABELA ((MAXTELEFONES) * (MAXAGENDA))
 
 // Tabela hash usada na busca pelo contato ao qual um
 // numero de telefone esta associado
@@ -22,84 +22,55 @@ void ins_hash(Contato *contato, const char *numero);
 // Remove um elemento da tabela hash
 void rm_hash(const char *numero);
 
-Telefones *inicia_tel()
+Telefones *cria_tel(const char *numero)
 {
-    return &(Telefones){NULL, 0, MAXTEL};
+    Telefones *t = (Telefones *)malloc(sizeof(Telefones));
+    t->numero = numero;
+    t->proximo = NULL;
+
+    return t;
 }
 
-void add_tel(Contato *contato, char *numero)
+void add_tel(Contato *contato, const char *numero)
 {
-    // Se não existir lista de telefones inicializada
-    if (contato->telefones == NULL) {
-        contato->telefones = inicia_tel();
-        if (contato->telefones == NULL) {
-            return;
-        }
-    }
-    Telefones *lista = contato->telefones;
-    // Verifica se a lista ja esta cheia
-    if (lista->ntel == lista->nmax) {
-        puts("Não foi possível adicionar um novo numero"
-             ", pois a lista de telefones ja esta cheia\n\n");
+    if (numero == NULL) {
         return;
     }
 
-    // Verifica se ja existe contato com o numero
-    Contato *c = busca_tel(numero);
-    if (c != NULL) {
-        printf("Não foi possível adicionar o número %s ao contato %s\n", numero,
-               contato->nome);
-        printf("O numero ja esta associado a %s\n\n\n", c->nome);
-        return;
-    }
-
-    // Inicia um novo nó na lista de contatos e o insere no inicio da lista
-    NoTelefone *novo = (NoTelefone *)malloc(sizeof(NoTelefone));
+    Telefones *novo = cria_tel(numero);
     if (novo == NULL) {
-        puts("Não foi possível alocar memoria para o telefone\n\n");
+        fprintf(stderr, "Erro ao criar novo telefone\n");
         return;
     }
+    novo->proximo = contato->telefones;
+    contato->telefones = novo;
+    contato->ntelefones++;
     ins_hash(contato, numero);
-    novo->numero = numero;
-    novo->ant = NULL;
-    novo->prox = lista->inicio;
-    lista->inicio = novo;
-    lista->ntel++;
-    if (novo->prox != NULL) {
-        novo->prox->ant = novo;
-    }
 }
 
 void rm_tel(Contato *contato, const char *numero)
 {
-    NoTelefone *atual = contato->telefones->inicio;
-    while (strcmp(atual->numero, numero) != 0) {
-        atual = atual->prox;
+    Telefones *telefone = contato->telefones;
+    Telefones *anterior = NULL;
+    while (strcmp(telefone->numero, numero) != 0) {
+        anterior = telefone;
+        telefone = telefone->proximo;
     }
 
-    if (atual == NULL) {
-        puts("Numero não encontrado");
+    if (telefone == NULL) {
+        fprintf(stderr, "Numero não encontrado\n");
         return;
     }
 
+    if (telefone == contato->telefones) {
+        contato->telefones = telefone->proximo;
+    } else {
+        anterior->proximo = telefone->proximo;
+    }
+    contato->ntelefones--;
     rm_hash(numero);
-    contato->telefones->ntel--;
-    if (atual == contato->telefones->inicio) {
-        contato->telefones->inicio = atual->prox;
-    }
-    if (atual->prox != NULL) {
-        atual->prox->ant = atual->ant;
-    }
-    if (atual->ant != NULL) {
-        atual->ant->prox = atual->prox;
-    }
 
-    free(atual);
-}
-
-uint8_t lista_cheia(Telefones *lista)
-{
-    return lista->ntel == lista->nmax;
+    free(telefone);
 }
 
 Contato *busca_tel(const char *numero)
@@ -107,13 +78,13 @@ Contato *busca_tel(const char *numero)
     uint32_t chave = hash(numero);
     while (tabela[chave] != NULL) {
         // Procura nos telefones do contato para verificar se é o contato certo
-        NoTelefone *atual = tabela[chave]->telefones->inicio;
+        Telefones *atual = tabela[chave]->telefones;
         while (atual != NULL) {
             // se o numero atual for igual ao procurado
             if (!strcmp(atual->numero, numero)) {
                 return tabela[chave];
             }
-            atual = atual->prox;
+            atual = atual->proximo;
         }
         chave++;
     }
@@ -124,10 +95,10 @@ Contato *busca_tel(const char *numero)
 uint32_t hash(const char *numero)
 {
     const unsigned int kSmallPrime = 16487;
-    const unsigned int max = MAXTABELA;
+    const unsigned int kLargePrime = 327673;
     uint32_t result = 0;
     for (const char *ch = numero; *ch != '\0'; ch++) {
-        result = (result * kSmallPrime + *ch) % max;
+        result = (result * kSmallPrime + *ch) % kLargePrime;
     }
 
     return result;
@@ -148,14 +119,14 @@ void rm_hash(const char *numero)
     uint32_t chave = hash(numero);
     while (tabela[chave] != NULL) {
         // Procura nos telefones do contato para verificar se é o contato certo
-        NoTelefone *atual = tabela[chave]->telefones->inicio;
+        Telefones *atual = tabela[chave]->telefones;
         while (atual != NULL) {
             // se o numero atual for igual ao procurado
             if (!strcmp(atual->numero, numero)) {
                 // remove a entrada da tabela
                 tabela[chave] = NULL;
             }
-            atual = atual->prox;
+            atual = atual->proximo;
         }
         chave++;
     }
@@ -163,75 +134,48 @@ void rm_hash(const char *numero)
 
 void exclui_telefones(Telefones *lista)
 {
-    NoTelefone *atual = lista->inicio;
-    while (atual != NULL) {
-        if (atual->prox != NULL) {
-            atual = atual->prox;
-            free(atual->ant);
+    Telefones *proximo = NULL;
+    while (lista != NULL) {
+        rm_hash(lista->numero);
+        if (lista->proximo != NULL) {
+            proximo = lista->proximo;
+            free(lista);
+            lista = proximo;
         } else {
-            free(atual);
+            free(lista);
+            lista = NULL;
         }
     }
-    free(lista);
 }
 
-int verifica_telefone(char *tel)
+char *string_telefones(Contato *contato)
 {
-    unsigned int len = strlen(tel);
-    unsigned int maxlen = 10; // xxxxx-xxx
-    unsigned int minlen = 9;  // xxxxxyyyy
-    if (len > maxlen || len <= minlen) {
-        return 0;
-    }
-    for (unsigned int i = 0; i < len; ++i) {
-        if (i == 5 && len == maxlen && tel[i] != '-') {
-            return 0;
-        }
-        if (!isdigit(tel[i])) {
-            return 0;
-        }
-    }
-
-    return 1;
-}
-
-char *string_telefones(Telefones *lista)
-{
-    const unsigned int size_tel = 10; // xxxxx-xxxx -> 10 caracteres
-    const unsigned int size_del = 5;  // " ::: " -> 5 caracteres
-    if (lista == NULL || lista->ntel == 0) {
+    if (contato->telefones == NULL) {
         return "";
     }
+    const unsigned int tam_tel = 15;  // tamanho maximo
+    const unsigned int tam_delim = 5; // " ::: "     5 caracteres
 
-    // Apenas um numero de telefone nao precisa do separador " ::: "
-    char *string;
-    if (lista->ntel == 1) {
-        string = (char *)malloc((size_tel + 1) * sizeof(char));
+    char *string = NULL;
+    if (contato->ntelefones == 1) {
+        // Apenas um numero de telefone nao precisa do delimitador " ::: "
+        string = (char *)malloc((tam_tel + 1) * sizeof(char));
     } else {
         string = (char *)malloc(
-            (size_tel * lista->ntel + size_del * lista->ntel) * sizeof(char));
+            (tam_tel * contato->ntelefones + tam_delim * contato->ntelefones) *
+            sizeof(char));
     }
-    string[0] = '\0';
-    string[size_tel * lista->ntel + size_del * lista->ntel - 1] = '\0';
+    string[0] = '\0'; // para garantir que o strcat ira concatenar na pos certa
+    string[(tam_tel * contato->ntelefones) +
+           (tam_delim * (contato->ntelefones - 1))] = '\0';
 
-    NoTelefone *tel = lista->inicio;
-    while (tel != NULL) {
-        // Transforma telefones da forma xxxxxyyyy para xxxxx-xxxx
-        if (strlen(tel->numero) == 9) {
-            char inicio[6]; // Cinco primeiros caracteres
-            strncpy(inicio, tel->numero, 5);
-            inicio[5] = '\0';
-            strcat(string, inicio);
-            strcat(string, "-");
-            // Ultimos 4 caracteres
-            strncat(string, strtok(tel->numero, inicio), 4);
-        } else {
-            strcat(string, tel->numero);
-        }
-        if (tel->prox != NULL) {
+    Telefones *lista = contato->telefones;
+    while (lista != NULL) {
+        strcat(string, lista->numero);
+        if (lista->proximo != NULL) {
             strcat(string, " ::: ");
         }
-        tel = tel->prox;
+        lista = lista->proximo;
     }
     return string;
 }
