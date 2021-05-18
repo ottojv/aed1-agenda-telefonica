@@ -44,10 +44,9 @@ void add_contato(Agenda *agenda, Contato *novo)
         anterior = anterior->anterior;
     } else {
         // Procura a posição de inserção com base no primeiro nome
-        if (anterior->proximo != anterior) {
-            while (strcmp(anterior->proximo->nome, novo->nome) < 0) {
-                anterior = anterior->proximo;
-            }
+        while (anterior->proximo != agenda->contatos &&
+               strcmp(anterior->proximo->nome, novo->nome) < 0) {
+            anterior = anterior->proximo;
         }
 
         // Procura posição com base no sobrenome caso primeiro nome seja igual
@@ -119,8 +118,8 @@ Contato *procura_nome(Agenda *agenda, const char *nome, const char *sobrenome)
         }
     }
 
-    if (!strcmp(contato->nome, nome)) {
-        if (sobrenome && strcmp(contato->sobrenome, sobrenome)) {
+    if (strcmp(contato->nome, nome) == 0) {
+        if (sobrenome && strcmp(contato->sobrenome, sobrenome) != 0) {
             return NULL;
         }
         return contato;
@@ -131,14 +130,15 @@ Contato *procura_nome(Agenda *agenda, const char *nome, const char *sobrenome)
 
 void exclui_agenda(Agenda *agenda)
 {
-    // Limpa os contatos
-    Contato *contato = agenda->contatos;
-    while (contato) {
-        Contato *prox = contato->proximo;
-        exclui_contato(contato);
-        contato = prox;
+    if (agenda->contatos) {
+        Contato *excluir = agenda->contatos;
+        do {
+            Contato *prox = excluir->proximo;
+            exclui_contato(excluir);
+            excluir = prox;
+        } while (excluir != agenda->contatos);
     }
-    // Limpa o histórico
+
     Historico *historico = agenda->historico;
     while (historico) {
         Historico *prox = historico->proximo;
@@ -159,8 +159,10 @@ void ligar(Agenda *agenda, const char *numero)
     Contato *c = busca_tel(numero);
     if (c != NULL) {
         novo->entrada.contato = c;
+        novo->conhecido = 1;
     } else {
         novo->entrada.numero = numero;
+        novo->conhecido = 0;
     }
 
     // Se o historico estive cheio remove a ultima entrada (mais antiga)
@@ -172,7 +174,7 @@ void ligar(Agenda *agenda, const char *numero)
         agenda->nhistorico--;
     }
 
-    if (!agenda->nhistorico) {
+    if (agenda->nhistorico == 0) {
         agenda->historico = novo;
         novo->proximo = novo;
         novo->anterior = novo;
@@ -346,7 +348,7 @@ void exportar_agenda(Agenda *agenda, const char *arquivo)
             "Symbol,Organization 1 - Location,Organization 1 - Job "
             "Description\n");
     Contato *atual = agenda->contatos;
-    while (atual != NULL) {
+    do {
         // Usa string de formatação para achar os campos relevantes na linha l
         // l da As colunas do csv são separadas por virgula e as colunas
         // elevantes são NOME: 2 SOBRENOME: 4 OBSERVACOES: 26 TELEFONES: 31
@@ -356,17 +358,40 @@ void exportar_agenda(Agenda *agenda, const char *arquivo)
         // Não importa corretamente se algum contato tiver campos com tags
         // e  ipo definida Ex.: Telefone - residencial / trabalho / fax /
         // etc
-        const char *f = ",%s,,%s,,,,,,,,,,,,,,,,,,,,,,%s,,,* "
+        const char *f = "%s,%s,,%s,,,,,,,,,,,,,,,,,,,,,,%s,,,* "
                         "myContacts,,%s,,%s,,%s,,%s,,,,\n";
 
+        char *nome_completo = NULL;
+        if (atual->nome && atual->sobrenome) {
+            nome_completo = (char *)malloc(
+                (strlen(atual->nome) + strlen(atual->sobrenome + 1)) *
+                sizeof(char));
+            nome_completo[0] = '\0';
+            strcat(nome_completo, atual->nome);
+            strcat(nome_completo, " ");
+            strcat(nome_completo, atual->sobrenome);
+        } else if (atual->nome) {
+            nome_completo = atual->nome;
+        } else if (atual->sobrenome) {
+            nome_completo = atual->sobrenome;
+        } else {
+            nome_completo = (char *)malloc(sizeof(char));
+            nome_completo[0] = '\0';
+        }
         // Escreve as informações do contato no arquivo
-        fprintf(arq, f, atual->nome,
+        fprintf(arq, f, nome_completo, atual->nome,
                 (atual->sobrenome != NULL ? atual->sobrenome : ""),
                 (atual->observacoes != NULL ? atual->observacoes : ""),
-                string_telefones(atual),
                 (atual->email != NULL ? atual->email : ""),
-                (atual->cargo != NULL ? atual->cargo : ""),
-                (atual->empresa != NULL ? atual->empresa : ""));
-    }
+                string_telefones(atual),
+                (atual->empresa != NULL ? atual->empresa : ""),
+                (atual->cargo != NULL ? atual->cargo : ""));
+
+        if (nome_completo != atual->nome && nome_completo != atual->sobrenome) {
+            free(nome_completo);
+        }
+
+        atual = atual->proximo;
+    } while (atual != agenda->contatos);
     fclose(arq);
 }

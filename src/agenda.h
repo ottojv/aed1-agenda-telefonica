@@ -26,6 +26,7 @@ struct historico {
         Contato *contato;
         const char *numero;
     } entrada;
+    int conhecido;
     Historico *proximo;
     Historico *anterior;
 };

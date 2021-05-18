@@ -87,7 +87,7 @@ int main(void)
         }
     } while (ch != 's');
 
-    // exportar_agenda(a, "agenda.csv");
+    exportar_agenda(agenda, "agenda.csv");
     exclui_agenda(agenda);
     return 0;
 }
@@ -479,7 +479,7 @@ void exibir_historico(Agenda *a)
 
     unsigned int i = 0;
     for (i = 0; i < max; i++) {
-        if (historico->entrada.contato) {
+        if (historico->conhecido) {
             Contato *contato = historico->entrada.contato;
             printf("%s %s\n\n", contato->nome,
                    contato->sobrenome ? contato->sobrenome : "");
