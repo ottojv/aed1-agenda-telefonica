@@ -21,7 +21,7 @@ Agenda *cria_agenda()
 
 void add_contato(Agenda *agenda, Contato *novo)
 {
-    // Agenda vazia
+    // agenda vazia
     if (agenda->contatos == NULL) {
         agenda->contatos = novo;
         agenda->ncontatos++;
@@ -30,42 +30,67 @@ void add_contato(Agenda *agenda, Contato *novo)
         return;
     }
 
-    // Agenda cheia
+    // agenda cheia
     if (agenda->ncontatos == agenda->maxcontatos) {
         fprintf(stderr, "Erro ao adicionar novo contato, agenda está cheia\n");
         exclui_contato(novo);
         return;
     }
 
-    Contato *anterior = agenda->contatos;
-    // Se o nome do primeiro contato for lexicograficamente superior
-    if (strcmp(anterior->nome, novo->nome) >= 0) {
-        // Inserir no inicio
-        anterior = anterior->anterior;
+    // nome completo do contato usado para procurar posição de inserção
+    char *novo_nome_completo = NULL;
+    if (novo->sobrenome) {
+        novo_nome_completo = (char *)calloc(
+            strlen(novo->nome) + strlen(novo->sobrenome) + 2, sizeof(char));
+        strcpy(novo_nome_completo, novo->nome);
+        strcat(novo_nome_completo, " ");
+        strcat(novo_nome_completo, novo->sobrenome);
     } else {
-        // Procura a posição de inserção com base no primeiro nome
-        while (anterior->proximo != agenda->contatos &&
-               strcmp(anterior->proximo->nome, novo->nome) < 0) {
-            anterior = anterior->proximo;
+        novo_nome_completo = novo->nome;
+    }
+
+    // procura posição de inserção
+    Contato *anterior = agenda->contatos;
+    do {
+        char *anterior_nome_completo = NULL;
+        if (anterior->sobrenome) {
+            anterior_nome_completo = (char *)calloc(
+                strlen(anterior->nome) + strlen(anterior->sobrenome) + 2,
+                sizeof(char));
+            strcat(anterior_nome_completo, anterior->nome);
+            strcat(anterior_nome_completo, " ");
+            strcat(anterior_nome_completo, anterior->sobrenome);
+        } else {
+            anterior_nome_completo = anterior->nome;
         }
 
-        // Procura posição com base no sobrenome caso primeiro nome seja igual
-        if (novo->sobrenome != NULL) {
-            // Enquanto o proximo existir, tiver sobrenome, o nome for igual e o
-            // sobrenome for lexicograficamente menor
-            if (strcmp(anterior->sobrenome, novo->sobrenome) > 0) {
-                while (anterior->proximo->sobrenome &&
-                       !strcmp(anterior->proximo->nome, novo->nome) &&
-                       strcmp(anterior->proximo->nome, novo->nome) < 0) {
-                    anterior = anterior->proximo;
-                }
+        // compara nomes completos do contato novo e do atual na lista
+        if (strcmp(anterior_nome_completo, novo_nome_completo) >= 0) {
+            anterior = anterior->anterior;
+
+            // atualiza ponteiro para inicio da agenda
+            if (anterior->proximo == agenda->contatos) {
+                agenda->contatos = novo;
             }
+
+            if (anterior_nome_completo != anterior->proximo->nome) {
+                free(anterior_nome_completo);
+            }
+
+            break;
         }
+
+        if (anterior_nome_completo != anterior->nome) {
+            free(anterior_nome_completo);
+        }
+
+        anterior = anterior->proximo;
+    } while (anterior != agenda->contatos);
+
+    if (novo_nome_completo != novo->nome) {
+        free(novo_nome_completo);
     }
-    // Inserção no inicio atualiza ponteiro para inicio da lista
-    if (anterior == agenda->contatos->anterior) {
-        agenda->contatos = novo;
-    }
+
     novo->anterior = anterior;
     novo->proximo = anterior->proximo;
     anterior->proximo = novo;
@@ -76,7 +101,6 @@ void add_contato(Agenda *agenda, Contato *novo)
 
 Contato *rm_contato(Agenda *agenda, Contato *contato)
 {
-    agenda->ncontatos--;
     if (!agenda->ncontatos) {
         agenda->contatos = NULL;
     } else {
@@ -88,6 +112,7 @@ Contato *rm_contato(Agenda *agenda, Contato *contato)
         contato->proximo = NULL;
         contato->anterior = NULL;
     }
+    agenda->ncontatos--;
 
     return contato;
 }
@@ -165,7 +190,7 @@ void ligar(Agenda *agenda, const char *numero)
         novo->conhecido = 0;
     }
 
-    // Se o historico estive cheio remove a ultima entrada (mais antiga)
+    // Se o historico estiver cheio remove a ultima entrada (mais antiga)
     if (agenda->nhistorico >= agenda->maxhistorico) {
         Historico *ultimo = agenda->historico->anterior;
         ultimo->anterior->proximo = ultimo->proximo;
