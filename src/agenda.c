@@ -119,11 +119,15 @@ Contato *rm_contato(Agenda *agenda, Contato *contato)
 
 Contato *procura_nome(Agenda *agenda, const char *nome, const char *sobrenome)
 {
-    Contato *contato = agenda->contatos;
-    int igual = 0;
     if (!nome) {
         fprintf(stderr, "É necessario digitar um nome para buscar\n");
+        return NULL;
     }
+
+    Contato *contato = agenda->contatos;
+    int igual = 0;
+
+    // procura contato pelo primeiro nome
     while ((igual = strcmp(contato->nome, nome))) {
         if (igual > 1) {
             // O nome do contato atual na lista ja vem depois do nome
@@ -133,12 +137,10 @@ Contato *procura_nome(Agenda *agenda, const char *nome, const char *sobrenome)
         contato = contato->proximo;
     }
 
+    // procura contato pelo sobrenome
     if (sobrenome) {
         while (contato->sobrenome && !strcmp(contato->nome, nome) &&
-               (igual = strcmp(contato->sobrenome, sobrenome))) {
-            if (igual == 0) {
-                return contato;
-            }
+               strcmp(contato->sobrenome, sobrenome) != 0) {
             contato = contato->proximo;
         }
     }
@@ -200,11 +202,11 @@ void ligar(Agenda *agenda, const char *numero)
     }
 
     if (agenda->nhistorico == 0) {
+        // Insere no inicio
         agenda->historico = novo;
         novo->proximo = novo;
         novo->anterior = novo;
     } else {
-        // Insere no inicio
         Historico *historico = agenda->historico;
         novo->proximo = historico;
         novo->anterior = historico->anterior;
@@ -372,51 +374,55 @@ void exportar_agenda(Agenda *agenda, const char *arquivo)
             "1 - Title,Organization 1 - Department,Organization 1 - "
             "Symbol,Organization 1 - Location,Organization 1 - Job "
             "Description\n");
-    Contato *atual = agenda->contatos;
-    do {
-        // Usa string de formatação para achar os campos relevantes na linha l
-        // l da As colunas do csv são separadas por virgula e as colunas
-        // elevantes são NOME: 2 SOBRENOME: 4 OBSERVACOES: 26 TELEFONES: 31
-        // EMAIL: 33
-        // CARGO: 35
-        // EMPRESA: 37
-        // Não importa corretamente se algum contato tiver campos com tags
-        // e  ipo definida Ex.: Telefone - residencial / trabalho / fax /
-        // etc
-        const char *f = "%s,%s,,%s,,,,,,,,,,,,,,,,,,,,,,%s,,,* "
-                        "myContacts,,%s,,%s,,%s,,%s,,,,\n";
 
-        char *nome_completo = NULL;
-        if (atual->nome && atual->sobrenome) {
-            nome_completo = (char *)malloc(
-                (strlen(atual->nome) + strlen(atual->sobrenome + 1)) *
-                sizeof(char));
-            nome_completo[0] = '\0';
-            strcat(nome_completo, atual->nome);
-            strcat(nome_completo, " ");
-            strcat(nome_completo, atual->sobrenome);
-        } else if (atual->nome) {
-            nome_completo = atual->nome;
-        } else if (atual->sobrenome) {
-            nome_completo = atual->sobrenome;
-        } else {
-            nome_completo = (char *)malloc(sizeof(char));
-            nome_completo[0] = '\0';
-        }
-        // Escreve as informações do contato no arquivo
-        fprintf(arq, f, nome_completo, atual->nome,
-                (atual->sobrenome != NULL ? atual->sobrenome : ""),
-                (atual->observacoes != NULL ? atual->observacoes : ""),
-                (atual->email != NULL ? atual->email : ""),
-                string_telefones(atual),
-                (atual->empresa != NULL ? atual->empresa : ""),
-                (atual->cargo != NULL ? atual->cargo : ""));
+    if (agenda->contatos != NULL) {
+        Contato *atual = agenda->contatos;
+        do {
+            // Usa string de formatação para achar os campos relevantes na linha
+            // l l da As colunas do csv são separadas por virgula e as colunas
+            // elevantes são NOME: 2 SOBRENOME: 4 OBSERVACOES: 26 TELEFONES: 31
+            // EMAIL: 33
+            // CARGO: 35
+            // EMPRESA: 37
+            // Não importa corretamente se algum contato tiver campos com tags
+            // e  ipo definida Ex.: Telefone - residencial / trabalho / fax /
+            // etc
+            const char *f = "%s,%s,,%s,,,,,,,,,,,,,,,,,,,,,,%s,,,* "
+                            "myContacts,,%s,,%s,,%s,,%s,,,,\n";
 
-        if (nome_completo != atual->nome && nome_completo != atual->sobrenome) {
-            free(nome_completo);
-        }
+            char *nome_completo = NULL;
+            if (atual->nome && atual->sobrenome) {
+                nome_completo = (char *)malloc(
+                    (strlen(atual->nome) + strlen(atual->sobrenome + 1)) *
+                    sizeof(char));
+                nome_completo[0] = '\0';
+                strcat(nome_completo, atual->nome);
+                strcat(nome_completo, " ");
+                strcat(nome_completo, atual->sobrenome);
+            } else if (atual->nome) {
+                nome_completo = atual->nome;
+            } else if (atual->sobrenome) {
+                nome_completo = atual->sobrenome;
+            } else {
+                nome_completo = (char *)malloc(sizeof(char));
+                nome_completo[0] = '\0';
+            }
+            // Escreve as informações do contato no arquivo
+            fprintf(arq, f, nome_completo, atual->nome,
+                    (atual->sobrenome != NULL ? atual->sobrenome : ""),
+                    (atual->observacoes != NULL ? atual->observacoes : ""),
+                    (atual->email != NULL ? atual->email : ""),
+                    string_telefones(atual),
+                    (atual->empresa != NULL ? atual->empresa : ""),
+                    (atual->cargo != NULL ? atual->cargo : ""));
 
-        atual = atual->proximo;
-    } while (atual != agenda->contatos);
+            if (nome_completo != atual->nome &&
+                nome_completo != atual->sobrenome) {
+                free(nome_completo);
+            }
+
+            atual = atual->proximo;
+        } while (atual != agenda->contatos);
+    }
     fclose(arq);
 }

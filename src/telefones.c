@@ -11,14 +11,18 @@
 
 // Tabela hash usada na busca pelo contato ao qual um
 // numero de telefone esta associado
-// A tabela sera usada quando o usuario ligar para um numero de telefone
-// caso o numero pertença a um contato, o contato sera adicionado ao historico
-// caso contrario apenas o numero de telefone sera adicionado no historico
+// Alem da busca, a tabela sera usada quando o usuario ligar para um numero de
+// telefone caso o numero pertença a um contato, o contato sera adicionado ao
+// historico caso contrario apenas o numero de telefone sera adicionado no
+// historico
 static Contato *tabela[MAXTABELA];
+
 // Retorna a chave hash associada há um numero de telefone
 uint32_t hash(const char *numero);
+
 // Insere um novo elemento na tabela hash
 void ins_hash(Contato *contato, const char *numero);
+
 // Remove um elemento da tabela hash
 void rm_hash(const char *numero);
 

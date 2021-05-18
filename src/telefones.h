@@ -1,9 +1,12 @@
 // Aluno: João Victor Otto
 // Matricula: 202000180
 //
-// Os numeros de telefones são armazenados como nós de uma lista
-// permitindo que os contatos tenham multiplos numeros de telefone
-// e abstraindo a implementação das funções de inserção, remoção e busca
+// Os numeros de telefone de cada contato são armazenados como uma lista
+// Esta biblioteca implementa funções para:
+// criar novo telefone, adicionar e remover telefone da lista, buscar contato
+// por numero de telefone (usando uma tabela hash), limpar memoria alocada por
+// um telefone e transformar a lista em uma string
+
 #ifndef TELEFONES_H
 #define TELEFONES_H
 
@@ -37,6 +40,6 @@ Contato *busca_tel(const char *numero);
 void exclui_telefones(Telefones *lista);
 
 // Retorna uma string com todos os telefones separados por " ::: "
-char *string_telefones(Contato* contato);
+char *string_telefones(Contato *contato);
 
 #endif
