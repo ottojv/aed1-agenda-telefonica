@@ -109,9 +109,9 @@ Contato *rm_contato(Agenda *agenda, Contato *contato)
         if (contato == agenda->contatos) {
             agenda->contatos = contato->proximo;
         }
-        contato->proximo = NULL;
-        contato->anterior = NULL;
     }
+    contato->proximo = NULL;
+    contato->anterior = NULL;
     agenda->ncontatos--;
 
     return contato;
