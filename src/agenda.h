@@ -66,7 +66,7 @@ Contato *procura_nome(Agenda *agenda, const char *nome, const char *sobrenome);
 // criada
 Agenda *importar_agenda(Agenda *agenda, const char *arquivo);
 
-// Exporta a agenda atual para um arquivo.csv
+// Exporta a agenda atual para um arquivo csv
 void exportar_agenda(Agenda *agenda, const char *arquivo);
 
 // Libera a memoria alocada pela agenda, incluindo contatos e historico

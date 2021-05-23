@@ -15,8 +15,9 @@ Contato *cria_contato(char *nome, char *sobrenome, char *telefone, char *email,
     novo->email = email;
     novo->empresa = empresa;
     novo->observacoes = observacoes;
+    novo->telefones = NULL;
+    novo->ntelefones = 0;
     add_tel(novo, telefone);
-    novo->ntelefones = 1;
     novo->proximo = NULL;
     novo->anterior = NULL;
 
