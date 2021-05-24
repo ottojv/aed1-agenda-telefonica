@@ -163,7 +163,7 @@ void novo_contato(Agenda *a) {
     emp[len] = '\0'; // remove o '\n' no final
   }
 
-  printf("\nObservações: ");
+  printf("\nObservacoes: ");
   fgets(buf, BUFSIZ, stdin);
   len = strlen(buf) - 1;
   char *obs = buf[0] == '\n' ? NULL : (char *)malloc(len * sizeof(char));
@@ -250,7 +250,7 @@ int exibir_contato(Agenda *a, Contato *c) {
   int ch = '\0';
   do {
     system("clear");
-    puts("INFORMAÇÕES DO CONTATO");
+    puts("INFORMACOES DO CONTATO");
     // imprime string vazia se ponteiro for NULL
     printf("n - Nome: %s\n", c->nome ? c->nome : "");
     printf("\ns - Sobrenome: %s\n", c->sobrenome ? c->sobrenome : "");
@@ -258,7 +258,7 @@ int exibir_contato(Agenda *a, Contato *c) {
     printf("\ne - Email: %s\n", c->email ? c->email : "");
     printf("\nc - Cargo: %s\n", c->cargo ? c->cargo : "");
     printf("\nm - Empresa: %s\n", c->empresa ? c->empresa : "");
-    printf("\no - Observações: %s\n", c->observacoes ? c->observacoes : "");
+    printf("\no - Observacoes: %s\n", c->observacoes ? c->observacoes : "");
 
     puts("\nOPÇÕES");
     puts("p - Proximo contato");
@@ -378,7 +378,7 @@ int exibir_contato(Agenda *a, Contato *c) {
       break;
 
     case 'o':
-      printf("\nDigite a nova observação: ");
+      printf("\nDigite a nova observacao: ");
       fgets(buf, BUFSIZ, stdin);
       len = strlen(buf);
       str = buf[0] == '\n' ? NULL : (char *)malloc(len * sizeof(char));
