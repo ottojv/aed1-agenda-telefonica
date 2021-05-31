@@ -26,7 +26,7 @@ Contato *cria_contato(char *nome, char *sobrenome, char *telefone, char *email,
 
 void exclui_contato(Contato *contato)
 {
-    exclui_telefones(contato->telefones);
+    exclui_telefones(contato);
     free(contato->nome);
     free(contato->cargo);
     free(contato->email);

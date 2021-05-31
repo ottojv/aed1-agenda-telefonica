@@ -37,7 +37,7 @@ void rm_tel(Contato *contato, const char *numero);
 Contato *busca_tel(const char *numero);
 
 // Libera a memoria alocada por uma lista de telefones
-void exclui_telefones(Telefones *lista);
+void exclui_telefones(Contato *contato);
 
 // Retorna uma string com todos os telefones separados por " ::: "
 char *string_telefones(Contato *contato);

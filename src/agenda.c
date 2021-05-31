@@ -7,6 +7,24 @@
 #include <stdlib.h>
 #include <string.h>
 
+// Le o cabeçalho de um arquivo csv para identificar em quais colunas estão os
+// dados que serão importados pelo programa
+// Cada parametro iniciado com col é um ponteiro para um inteiro que armazenará
+// a coluna em que o respectivo campo se encontra
+// No caso dos telefones que podem estar armazenados em mais de
+// uma coluna no csv o ponteiro referencia o inicio de um array de inteiros
+// e o parametro ntel indica armazenará quantas colunas do arquivo csv contem
+// telefones
+void parse_header(FILE *arquivo, int *col_nome, int *col_sobrenome,
+                  int *col_empresa, int *col_cargo, int *col_email,
+                  int *col_tel, int *ntel, int *col_obs);
+
+// Le os dados de um contato (uma linha) do arquivo csv, extraindo as
+// informações relevantes e cria um novo contato
+void parse_line(Agenda *agenda, FILE *arquivo, int *col_nome,
+                int *col_sobrenome, int *col_empresa, int *col_cargo,
+                int *col_email, int *col_tel, int *ntel, int *col_obs);
+
 Agenda *cria_agenda()
 {
     Agenda *nova = (Agenda *)malloc(sizeof(Agenda));
@@ -233,120 +251,20 @@ Agenda *importar_agenda(Agenda *agenda, const char *arquivo)
         }
     }
 
-    // Le e ignora a primeira linha do arquivo (cabeçalho)
-    char buffer[BUFSIZ];
-    fgets(buffer, BUFSIZ, arq);
-    // Percorre as linhas do arquivo
+    // A coluna em que cada campo esta armazenado no csv
+    int col_nome = -1;
+    int col_sobrenome = -1;
+    int col_empresa = -1;
+    int col_cargo = -1;
+    int col_email = -1;
+    int col_tel[9];
+    int n_tel = 0; // quantas colunas com telefone foram encontrada no arquivo
+    int col_obs = -1;
+    parse_header(arq, &col_nome, &col_sobrenome, &col_empresa, &col_cargo,
+                 &col_email, col_tel, &n_tel, &col_obs);
     while (!feof(arq)) {
-        // Le uma linha do csv
-        fgets(buffer, BUFSIZ, arq);
-
-        char *cargo = NULL;
-        char *email = NULL;
-        char *empresa = NULL;
-        char *nome = NULL;
-        char *obs = NULL;
-        char *sobrenome = NULL;
-        char *telefones = NULL;
-
-        // As colunas do csv são separadas por virgula
-        // e as colunas relevantes são
-        // NOME: 2
-        // SOBRENOME: 4
-        // OBSERVACOES: 26
-        // TELEFONES: 31
-        // EMAIL: 33
-        // CARGO: 35
-        // EMPRESA: 37
-        // Não importa corretamente se algum contato tiver campos com tags
-        // de tipo definida
-        // Ex.: Telefone - residencial / trabalho / fax
-        const char *s = strtok(buffer, ",");
-        int col = 1;
-        do {
-            size_t tam = 0;
-            switch (col) {
-            case 2:
-                tam = strlen(s) + 1;
-                nome = (char *)malloc(tam * sizeof(char));
-                strcpy(nome, s);
-                nome[tam] = '\0';
-                break;
-            case 3:
-                tam = strlen(s) + 1;
-                sobrenome = (char *)malloc(tam * sizeof(char));
-                strcpy(sobrenome, s);
-                sobrenome[tam] = '\0';
-                break;
-            case 26:
-                tam = strlen(s) + 1;
-                obs = (char *)malloc(tam * sizeof(char));
-                strcpy(obs, s);
-                obs[tam] = '\0';
-                break;
-            case 31:
-                tam = strlen(s) + 1;
-                telefones = (char *)malloc(tam * sizeof(char));
-                strcpy(telefones, s);
-                telefones[tam] = '\0';
-                break;
-            case 33:
-                tam = strlen(s) + 1;
-                email = (char *)malloc(tam * sizeof(char));
-                strcpy(email, s);
-                email[tam] = '\0';
-                break;
-            case 35:
-                tam = strlen(s) + 1;
-                cargo = (char *)malloc(tam * sizeof(char));
-                strcpy(cargo, s);
-                cargo[tam] = '\0';
-                break;
-            case 37:
-                tam = strlen(s) + 1;
-                empresa = (char *)malloc(tam * sizeof(char));
-                strcpy(empresa, s);
-                empresa[tam] = '\0';
-                break;
-            }
-            col++;
-            s = strtok(NULL, ",");
-        } while (s != NULL);
-
-        // Se um contato tiver multiplos numeros de telefone
-        // Os numeros estarão na mesma coluna separados por " ::: "
-        // Cria um novo contato com o primeiro de telefone
-        Contato *cont =
-            cria_contato(nome, sobrenome, strtok(telefones, " ::: "), email,
-                         cargo, empresa, obs);
-        if (cont == NULL) {
-            return NULL;
-        }
-        // Adiciona os numeros restantes
-        while (1) {
-            char *tel = strtok(telefones, " ::: ");
-            if (tel == NULL) {
-                break;
-            }
-            add_tel(cont, tel);
-        }
-        // Adiciona os campos não vazios restantes
-        if (!strcmp(sobrenome, "")) {
-            edita_contato(cont, sobrenome, SOBRENOME);
-        }
-        if (!strcmp(obs, "")) {
-            edita_contato(cont, obs, OBSERVACOES);
-        }
-        if (!strcmp(email, "")) {
-            edita_contato(cont, email, EMAIL);
-        }
-        if (!strcmp(cargo, "")) {
-            edita_contato(cont, cargo, CARGO);
-        }
-        if (!strcmp(empresa, "")) {
-            edita_contato(cont, empresa, EMPRESA);
-        }
-        add_contato(agenda, cont);
+        parse_line(agenda, arq, &col_nome, &col_sobrenome, &col_empresa,
+                   &col_cargo, &col_email, col_tel, &n_tel, &col_obs);
     }
     fclose(arq);
     return agenda;
@@ -385,7 +303,7 @@ void exportar_agenda(Agenda *agenda, const char *arquivo)
             // CARGO: 35
             // EMPRESA: 37
             // Não importa corretamente se algum contato tiver campos com tags
-            // e  ipo definida Ex.: Telefone - residencial / trabalho / fax /
+            // e tipo definida Ex.: Telefone - residencial / trabalho / fax /
             // etc
             const char *f = "%s,%s,,%s,,,,,,,,,,,,,,,,,,,,,,%s,,,* "
                             "myContacts,,%s,,%s,,%s,,%s,,,,\n";
@@ -393,7 +311,7 @@ void exportar_agenda(Agenda *agenda, const char *arquivo)
             char *nome_completo = NULL;
             if (atual->nome && atual->sobrenome) {
                 nome_completo = (char *)malloc(
-                    (strlen(atual->nome) + strlen(atual->sobrenome + 1)) *
+                    (strlen(atual->nome) + strlen(atual->sobrenome) + 1) *
                     sizeof(char));
                 nome_completo[0] = '\0';
                 strcat(nome_completo, atual->nome);
@@ -408,13 +326,14 @@ void exportar_agenda(Agenda *agenda, const char *arquivo)
                 nome_completo[0] = '\0';
             }
             // Escreve as informações do contato no arquivo
+            char *telefones = string_telefones(atual);
             fprintf(arq, f, nome_completo, atual->nome,
                     (atual->sobrenome != NULL ? atual->sobrenome : ""),
                     (atual->observacoes != NULL ? atual->observacoes : ""),
-                    (atual->email != NULL ? atual->email : ""),
-                    string_telefones(atual),
+                    (atual->email != NULL ? atual->email : ""), telefones,
                     (atual->empresa != NULL ? atual->empresa : ""),
                     (atual->cargo != NULL ? atual->cargo : ""));
+            free(telefones);
 
             if (nome_completo != atual->nome &&
                 nome_completo != atual->sobrenome) {
@@ -425,4 +344,208 @@ void exportar_agenda(Agenda *agenda, const char *arquivo)
         } while (atual != agenda->contatos);
     }
     fclose(arq);
+}
+
+void parse_header(FILE *arquivo, int *col_nome, int *col_sobrenome,
+                  int *col_empresa, int *col_cargo, int *col_email,
+                  int *col_tel, int *ntel, int *col_obs)
+{
+    char buffer[BUFSIZ];
+    if (fgets(buffer, BUFSIZ, arquivo) == NULL) {
+        return;
+    }
+
+    int col = 1;
+    int i_tel = 0;
+    char *token = strtok(buffer, ",");
+    while (token != NULL) {
+        if (strstr(token, "Given Name") && *col_nome == -1) {
+            *col_nome = col;
+        } else if (strstr(token, "Family Name") && *col_sobrenome == -1) {
+            *col_sobrenome = col;
+        } else if (strstr(token, "Notes") && *col_obs == -1) {
+            *col_obs = col;
+        } else if (strstr(token, "E-mail 1 - Value") && *col_email == -1) {
+            // Um contato no arquivo importado pode ter multiplos emails, porem
+            // o programa so importará o primeiro email encontrado
+            *col_email = col;
+        } else if (strstr(token, "Phone 1 - Value")) {
+            col_tel[i_tel] = col;
+            i_tel++;
+        } else if (strstr(token, "Phone 2 - Value")) {
+            col_tel[i_tel] = col;
+            i_tel++;
+        } else if (strstr(token, "Phone 3 - Value")) {
+            col_tel[i_tel] = col;
+            i_tel++;
+        } else if (strstr(token, "Phone 4 - Value")) {
+            col_tel[i_tel] = col;
+            i_tel++;
+        } else if (strstr(token, "Phone 5 - Value")) {
+            col_tel[i_tel] = col;
+            i_tel++;
+        } else if (strstr(token, "Phone 6 - Value")) {
+            col_tel[i_tel] = col;
+            i_tel++;
+        } else if (strstr(token, "Phone 7 - Value")) {
+            col_tel[i_tel] = col;
+            i_tel++;
+        } else if (strstr(token, "Phone 8 - Value")) {
+            col_tel[i_tel] = col;
+            i_tel++;
+        } else if (strstr(token, "Phone 9 - Value")) {
+            col_tel[i_tel] = col;
+            i_tel++;
+        } else if (strstr(token, "Organization 1 - Name")) {
+            *col_empresa = col;
+        } else if (strstr(token, "Organization 1 - Title")) {
+            *col_cargo = col;
+        }
+        col++;
+        token = strtok(NULL, ",");
+    }
+    *ntel = i_tel;
+}
+
+void parse_line(Agenda *agenda, FILE *arquivo, int *col_nome,
+                int *col_sobrenome, int *col_empresa, int *col_cargo,
+                int *col_email, int *col_tel, int *ntel, int *col_obs)
+{
+    char buffer[BUFSIZ];
+    if (fgets(buffer, BUFSIZ, arquivo) == NULL) {
+        return;
+    }
+
+    char *cargo = NULL;
+    char *email = NULL;
+    char *empresa = NULL;
+    char *nome = NULL;
+    char *obs = NULL;
+    char *sobrenome = NULL;
+    char *telefones[9] = {NULL};
+    char *s = NULL;
+
+    int col = 0;            // a coluna no arquivo csv
+    int itel = 0;           // indice do array das colunas de telefone
+    unsigned long ibuf = 0; // indice do buffer
+    do {
+        size_t tam = 0;
+        if (col + 1 == *col_nome) {
+            // Le o buffer da posição atual até a proxima virgula
+            s = strtok(buffer + ibuf, ",");
+            tam = strlen(s) + 1;
+            nome = (char *)malloc(tam * sizeof(char));
+            strcpy(nome, s);
+            nome[tam] = '\0';
+
+            // atualiza o indice para acompanhar a posição apos a leitura
+            ibuf += tam - 1;
+            col++;
+        } else if (col + 1 == *col_sobrenome) {
+            s = strtok(buffer + ibuf, ",");
+            tam = strlen(s) + 1;
+            sobrenome = (char *)malloc(tam * sizeof(char));
+            strcpy(sobrenome, s);
+            sobrenome[tam] = '\0';
+
+            ibuf += tam - 1;
+            col++;
+        } else if (col + 1 == *col_obs) {
+            s = strtok(buffer + ibuf, ",");
+            tam = strlen(s) + 1;
+            obs = (char *)malloc(tam * sizeof(char));
+            strcpy(obs, s);
+            obs[tam] = '\0';
+
+            ibuf += tam - 1;
+            col++;
+        } else if (col + 1 >= col_tel[0] && col + 1 <= col_tel[*ntel - 1]) {
+            if (abs(col - col_tel[0]) % 2 == col_tel[0] % 2 &&
+                buffer[ibuf] != ',') {
+                s = strtok(buffer + ibuf, ",");
+                tam = strlen(s) + 1;
+                telefones[itel] = (char *)malloc(tam * sizeof(char));
+                strcpy(telefones[itel], s);
+                telefones[itel][tam] = '\0';
+
+                ibuf += tam - 1;
+                col++;
+                itel++;
+            }
+        } else if (col + 1 == *col_email) {
+            s = strtok(buffer + ibuf, ",");
+            tam = strlen(s) + 1;
+            email = (char *)malloc(tam * sizeof(char));
+            strcpy(email, s);
+            email[tam] = '\0';
+
+            ibuf += tam;
+            col += 1;
+        } else if (col + 1 == *col_cargo) {
+            s = strtok(buffer + ibuf, ",");
+            tam = strlen(s) + 1;
+            cargo = (char *)malloc(tam * sizeof(char));
+            strcpy(cargo, s);
+            cargo[tam] = '\0';
+
+            ibuf += tam - 1;
+            col++;
+        } else if (col + 1 == *col_empresa) {
+            s = strtok(buffer + ibuf, ",");
+            tam = strlen(s) + 1;
+            empresa = (char *)malloc(tam * sizeof(char));
+            strcpy(empresa, s);
+            empresa[tam] = '\0';
+
+            ibuf += tam - 1;
+            col++;
+        }
+        if (buffer[ibuf] == ',') {
+            col++;
+        }
+        buffer[ibuf++] = '\0';
+    } while (buffer[ibuf] != '\0');
+
+    // Se um contato tiver multiplos numeros de telefone
+    // Os numeros estarão na mesma coluna separados por " ::: "
+    // Cria um novo contato com o primeiro numero de telefone
+    Contato *cont = cria_contato(nome, sobrenome, strtok(telefones[0], ":::"),
+                                 email, cargo, empresa, obs);
+    if (cont == NULL) {
+        fprintf(stderr, "Erro ao alocar memoria para contato na importacao\n");
+        return;
+    }
+    // Adiciona os numeros restantes
+    // Numeros restantes na primeira posição do vetor
+    while (1) {
+        char *tel = strtok(NULL, ":::");
+        if (tel == NULL) {
+            break;
+        }
+        // Evita contatos com numeros de telefone duplicados
+        if (busca_tel(tel) == NULL) {
+            add_tel(cont, tel);
+        }
+    }
+    // Numeros nas outras posicoes do vetor
+    for (int i = 1; i < *ntel; i++) {
+        // Adiciona primeiro numero
+        char *tel = strtok(telefones[i], ":::");
+        if (tel != NULL && busca_tel(tel) == NULL) {
+            add_tel(cont, tel);
+        }
+
+        // Numeros restantes
+        while (1) {
+            tel = strtok(NULL, " ::: ");
+            if (tel == NULL) {
+                break;
+            }
+            // Evita contatos com numeros de telefone duplicados
+            if (busca_tel(tel) == NULL) {
+                add_tel(cont, tel);
+            }
+        }
+    }
+    add_contato(agenda, cont);
 }

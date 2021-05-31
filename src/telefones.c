@@ -126,9 +126,10 @@ void rm_hash(const char *numero)
         Telefones *atual = tabela[chave]->telefones;
         while (atual != NULL) {
             // se o numero atual for igual ao procurado
-            if (!strcmp(atual->numero, numero)) {
+            if (atual->numero && !strcmp(atual->numero, numero)) {
                 // remove a entrada da tabela
                 tabela[chave] = NULL;
+                return;
             }
             atual = atual->proximo;
         }
@@ -136,8 +137,9 @@ void rm_hash(const char *numero)
     }
 }
 
-void exclui_telefones(Telefones *lista)
+void exclui_telefones(Contato *contato)
 {
+    Telefones *lista = contato->telefones;
     Telefones *proximo = NULL;
     while (lista != NULL) {
         rm_hash(lista->numero);
@@ -145,6 +147,7 @@ void exclui_telefones(Telefones *lista)
             proximo = lista->proximo;
             free(lista);
             lista = proximo;
+            contato->telefones = lista;
         } else {
             free(lista);
             lista = NULL;
@@ -154,13 +157,14 @@ void exclui_telefones(Telefones *lista)
 
 char *string_telefones(Contato *contato)
 {
+    char *string = NULL;
     if (contato->telefones == NULL) {
-        return "";
+        string = (char *)malloc(sizeof(char) * 2);
+        strcpy(string, "");
     }
     const unsigned int tam_tel = 15;  // tamanho maximo
     const unsigned int tam_delim = 5; // " ::: "     5 caracteres
 
-    char *string = NULL;
     if (contato->ntelefones == 1) {
         // Apenas um numero de telefone nao precisa do delimitador " ::: "
         string = (char *)malloc((tam_tel + 1) * sizeof(char));
