@@ -28,10 +28,11 @@ void exibir_historico(Agenda *a);
 int main(void)
 {
     Agenda *agenda = cria_agenda();
-    importar_agenda(agenda, "contactsteste.csv");
-    int ch = '\0';
+    char nome_arquivo[BUFSIZ];
+    char ch = '\0';
     do {
         system("clear");
+        puts("i - Importar agenda\n");
         puts("c - Criar contato\n");
         puts("n - Buscar contato por nome\n");
         puts("t - Buscar contato por telefone\n");
@@ -42,9 +43,14 @@ int main(void)
 
         int proximo = 0;
         Contato *contato = NULL;
-        ch = getchar();
-        getchar();
+        scanf("%c%*c", &ch);
         switch (ch) {
+        case 'i':
+            puts("Digite o nome do arquivo que deseja importar incluindo o "
+                 ".csv");
+            scanf("%[^\n]%*c", nome_arquivo);
+            importar_agenda(agenda, nome_arquivo);
+            break;
         case 'c':
             novo_contato(agenda);
             break;
@@ -254,7 +260,7 @@ int exibir_contato(Agenda *a, Contato *c)
         return 0;
     }
 
-    int ch = '\0';
+    char ch = '\0';
     do {
         system("clear");
         puts("INFORMACOES DO CONTATO");
@@ -278,8 +284,7 @@ int exibir_contato(Agenda *a, Contato *c)
         char buf[BUFSIZ];
         char *str = NULL;
         unsigned long len = 0;
-        ch = getchar();
-        getchar();
+        scanf("%c%*c", &ch);
         switch (ch) {
         case 'n':
             printf("\nDigite o novo nome: ");
@@ -311,8 +316,7 @@ int exibir_contato(Agenda *a, Contato *c)
 
         case 't':
             printf("a - Adicionar telefone\nr - Remover telefone\n");
-            ch = getchar();
-            getchar();
+            scanf("%c%*c", &ch);
             switch (ch) {
             case 'a':
                 printf("\nNovo numero: ");
@@ -403,15 +407,14 @@ int exibir_contato(Agenda *a, Contato *c)
                 ligar(a, c->telefones->numero);
             } else {
                 puts("O contato não possui numeros de telefone");
-                puts("Pressione qualquer tecla");
+                puts("Pressione enter");
                 getchar();
             }
             break;
 
         case 'r':
             printf("Tem certeza que deseja remover o contato? s/n ");
-            ch = getchar();
-            getchar();
+            scanf("%c%*c", &ch);
             if (ch == 's') {
                 exclui_contato(rm_contato(a, c));
                 return -1;
@@ -455,10 +458,15 @@ void exibir_contatos(Agenda *a)
     }
 
     printf("Quantidade de contatos: %d\n", a->ncontatos);
+    printf("Digite 0 para voltar\n");
     printf("Digite o indice do contato que deseja visualizar: ");
     scanf("%d%*c", &i);
 
-    if (i > 0 && i <= max) {
+    if (i == 0) {
+        return;
+    }
+
+    if (i <= max) {
         Contato *contato = contatos[i - 1];
         int opcao = 0;
         do {
@@ -473,6 +481,8 @@ void exibir_contatos(Agenda *a)
         } while (opcao != 0 && a->contatos != NULL);
     } else {
         puts("Indice invalido");
+        puts("Pressione enter");
+        getchar();
     }
 }
 
@@ -494,7 +504,7 @@ void exibir_historico(Agenda *a)
         historico = historico->proximo;
     }
 
-    puts("\n\nPressione qualquer tecla\n");
+    puts("\n\nPressione enter\n");
     getchar();
 }
 
@@ -513,7 +523,7 @@ void ligacao(Agenda *a)
         ligar(a, str);
     } else {
         puts("Numero invalido\n");
-        puts("Pressione qualquer tecla\n");
+        puts("Pressione enter\n");
         getchar();
     }
 }
