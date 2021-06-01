@@ -282,13 +282,13 @@ void parse_line(Agenda *agenda, FILE *arquivo)
     // Le cada campo separado por uma virgula pulando os campos vazios
     char nome_buf[BUFSIZ] = {'\0'};
     char sobrenome_buf[BUFSIZ] = {'\0'};
-    char telefones[BUFSIZ] = {'\0'};
+    char telefones_buf[BUFSIZ] = {'\0'};
     char email_buf[BUFSIZ] = {'\0'};
     char cargo_buf[BUFSIZ] = {'\0'};
     char empresa_buf[BUFSIZ] = {'\0'};
     char obs_buf[BUFSIZ] = {'\0'};
     sscanf(buffer, "%[^,],%[^,],%[^,],%[^,],%[^,],%[^,],%[^\n]%*c", nome_buf,
-           sobrenome_buf, obs_buf, email_buf, telefones, empresa_buf,
+           sobrenome_buf, obs_buf, email_buf, telefones_buf, empresa_buf,
            cargo_buf);
 
     size_t tam = strlen(nome_buf);
@@ -315,10 +315,14 @@ void parse_line(Agenda *agenda, FILE *arquivo)
     char *obs = (char *)malloc(tam * sizeof(char));
     strcpy(obs, obs_buf);
 
+    tam = strlen(telefones_buf);
+    char *telefones = (char*)malloc(tam * sizeof(char));
+    strcpy(telefones, telefones_buf);
+
     // Se um contato tiver multiplos numeros de telefone
     // Os numeros estarão na mesma coluna separados por " ::: "
     // Cria um novo contato com o primeiro numero de telefone
-    Contato *cont = cria_contato(nome, sobrenome, strtok(telefones, ":::"),
+    Contato *cont = cria_contato(nome, sobrenome, strtok(telefones, " ::: "),
                                  email, cargo, empresa, obs);
     if (cont == NULL) {
         fprintf(stderr, "Erro ao alocar memoria para contato na importacao\n");
@@ -326,7 +330,7 @@ void parse_line(Agenda *agenda, FILE *arquivo)
     }
     // Adiciona os numeros restantes
     while (1) {
-        char *tel = strtok(NULL, ":::");
+        char *tel = strtok(NULL, " ::: ");
         if (tel == NULL) {
             break;
         }
