@@ -28,7 +28,8 @@ void exibir_historico(Agenda *a);
 int main(void)
 {
     Agenda *agenda = cria_agenda();
-    char nome_arquivo[BUFSIZ];
+    char infile[BUFSIZ];
+    char outfile[BUFSIZ];
     char ch = '\0';
     do {
         system("clear");
@@ -48,8 +49,8 @@ int main(void)
         case 'i':
             puts("Digite o nome do arquivo que deseja importar incluindo o "
                  ".csv");
-            scanf("%[^\n]%*c", nome_arquivo);
-            importar_agenda(agenda, nome_arquivo);
+            scanf("%[^\n]%*c", infile);
+            importar_agenda(agenda, infile);
             break;
         case 'c':
             novo_contato(agenda);
@@ -88,13 +89,22 @@ int main(void)
         case 'l':
             ligacao(agenda);
             break;
+        case 's':
+            puts("Digite o nome do arquivo que deseja importar incluindo o "
+                 ".csv");
+            scanf("%[^\n]%*c", outfile);
+            if (outfile[0] == '\0') {
+                strcpy(outfile, "agenda.csv");
+            }
+
+            break;
 
         default:
             break;
         }
     } while (ch != 's');
 
-    exportar_agenda(agenda, "agenda.csv");
+    exportar_agenda(agenda, outfile);
     exclui_agenda(agenda);
     return 0;
 }
