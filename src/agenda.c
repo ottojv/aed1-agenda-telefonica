@@ -53,6 +53,7 @@ void add_contato(Agenda *agenda, Contato *novo)
         novo_nome_completo = novo->nome;
     }
 
+
     // procura posição de inserção
     Contato *anterior = agenda->contatos;
     do {
@@ -67,7 +68,7 @@ void add_contato(Agenda *agenda, Contato *novo)
         } else {
             anterior_nome_completo = anterior->nome;
         }
-
+        
         // compara nomes completos do contato novo e do atual na lista
         if (strcmp(anterior_nome_completo, novo_nome_completo) >= 0) {
             anterior = anterior->anterior;
